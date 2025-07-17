@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useCart } from "@/components/cart-provider"
 import { useParams } from "next/navigation"
+import { fetchFromBackend } from "@/lib/api"
 
 // Mock product data - in a real app, you would fetch this from an API
 const products = [
@@ -121,13 +122,16 @@ export default function ProductPage(){
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   console.log(productId)
+
+  
   useEffect(() => {
       const fetchData = async () => {
         try {
-          const response = await fetch(`http://localhost:8080/products/${productId}`);
-          if (!response.ok) throw new Error('Network response was not ok');
-          const jsonData = await response.json();
-          console.log(jsonData)
+          //const backendUrl = process.env.API_URL;
+          //const response = await  fetch(`${backendUrl}/products/${productId}`);
+          //if (!response.ok) throw new Error('Network response was not ok');
+          const jsonData = await fetchFromBackend(`/products/${productId}`);
+          console.log(jsonData);
           setProduct(jsonData);
         } catch (err) {
           console.log(err)

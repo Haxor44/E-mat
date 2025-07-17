@@ -1,6 +1,7 @@
 'use client';
 import { ProductGrid } from "@/components/product-grid"
 import { useState, useEffect } from 'react';
+import { fetchFromBackend } from '@/lib/api';
 
 const products = [
   {
@@ -70,6 +71,7 @@ const products = [
 ]
 
 export default function ProductsPage() {
+  
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -77,9 +79,11 @@ export default function ProductsPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('http://localhost:8080/products');
-        if (!response.ok) throw new Error('Network response was not ok');
-        const jsonData = await response.json();
+        const backendUrl = process.env.API_URL;
+
+        //const response = await fetch(`${backendUrl}/products`);
+        //if (!response.ok) throw new Error('Network response was not ok');
+        const jsonData = await fetchFromBackend("/products");
         setData(jsonData);
       } catch (err) {
         console.log(err)

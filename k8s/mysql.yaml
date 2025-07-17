@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mariadb
+spec:
+  selector:
+    matchLabels:
+      app: mariadb
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: mariadb
+    spec:
+      containers:
+      - name: mariadb
+        image: mariadb:11.3
+
+        env:
+        - name: MARIADB_ALLOW_EMPTY_ROOT_PASSWORD
+          value: "yes"
+        - name: MYSQL_DATABASE
+          value: "emat"
+        - name: MYSQL_USER
+          value: "root"
+        - name: MYSQL_PASSWORD
+          value: ""
+        ports:
+        - containerPort: 3306
+        volumeMounts:
+        - name: mariadb-data
+          mountPath: /var/lib/mysql
+        - name: mariadb-init
+          mountPath: /docker-entrypoint-initdb.d
+      volumes:
+      - name: mariadb-data
+        persistentVolumeClaim:
+          claimName: mariadb-pvc
+      - name: mariadb-init
+        configMap:
+          name: mysql-config
+          items:
+          - key: initdb.sql
+            path: initdb.sql
+          - key: createdb.sql
+            path: createdb.sql
+          - key: insertdb.sql
+            path: insertdb.sql
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-service
+spec:
+  selector:
+    app: mariadb
+  ports:
+    - port: 3306
+      targetPort: 3306
+  type: ClusterIP  # Internal service (not publicly accessible) 
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mariadb-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi  # Adjust size as needed
+  storageClassName: standard  # Change if your cluster uses different storage
